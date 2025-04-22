@@ -4,6 +4,199 @@
   <meta charset="UTF-8">
   <title>Project Management | CollabSphere</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --accent: #00c9a7;
+      --danger: #ff5252;
+      --warning: #fbc02d;
+      --light: #f9f9f9;
+      --dark: #2c3e50;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #f5f7fa, #e2f0f9);
+      color: var(--dark);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo {
+      height: 40px;
+    }
+
+    nav a {
+      margin-left: 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+
+    nav a:hover {
+      opacity: 0.8;
+    }
+
+    .container {
+      padding: 40px 60px;
+      max-width: 1000px;
+      margin: auto;
+      flex: 1;
+      animation: fadeIn 0.8s ease;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    p {
+      margin-bottom: 30px;
+      color: #555;
+    }
+
+    .task-form, .task-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    input, select, button {
+      padding: 10px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 5px rgba(108, 99, 255, 0.4);
+    }
+
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .delete-btn {
+      background-color: var(--danger);
+    }
+
+    .edit-btn {
+      background-color: var(--warning);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .task-list {
+      display: grid;
+      gap: 20px;
+    }
+
+    .task-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      transition: 0.3s ease;
+    }
+
+    .task-card:hover {
+      transform: scale(1.01);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .task-info h4 {
+      margin: 0 0 6px;
+      color: var(--primary);
+    }
+
+    .progress-bar-container {
+      background-color: #eee;
+      border-radius: 20px;
+      overflow: hidden;
+      width: 140px;
+      height: 10px;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      background-color: var(--accent);
+      height: 10px;
+      width: 0%;
+      transition: width 0.4s ease-in-out;
+    }
+
+    footer {
+      background-color: var(--primary);
+      color: #eee;
+      text-align: center;
+      padding: 15px;
+      font-size: 14px;
+      margin-top: auto;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      nav {
+        margin-top: 10px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .task-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -19,9 +212,112 @@
     <p>Manage tasks, track progress, and deadlines with your team.</p>
     <!-- Kanban or table format -->
   </main>
+<div class="container">
+    <h2>Project Boards</h2>
+    <p>Manage tasks, track progress, and deadlines with your team.</p>
 
+    <div class="task-form">
+      <input type="text" id="taskTitle" placeholder="Task Title">
+      <input type="text" id="assignedTo" placeholder="Assigned To">
+      <input type="date" id="deadline">
+      <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="task-actions">
+      <select id="taskSelector">
+        <option disabled selected>Select a task</option>
+      </select>
+      <button class="edit-btn" onclick="editTask()">Edit Task</button>
+      <button class="delete-btn" onclick="deleteTask()">Delete Task</button>
+    </div>
+
+    <div class="task-list" id="taskList"></div>
+  </div>
   <footer>
     <p>&copy; 2025 CollabSphere</p>
   </footer>
+  <script>
+    const tasks = [];
+
+    function addTask() {
+      const title = document.getElementById("taskTitle").value.trim();
+      const assigned = document.getElementById("assignedTo").value.trim();
+      const deadline = document.getElementById("deadline").value;
+
+      if (!title || !assigned || !deadline) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const task = { title, assigned, deadline, progress: 0 };
+      tasks.push(task);
+      renderTasks();
+      clearForm();
+    }
+
+    function renderTasks() {
+      const taskList = document.getElementById("taskList");
+      const taskSelector = document.getElementById("taskSelector");
+      taskList.innerHTML = "";
+      taskSelector.innerHTML = '<option disabled selected>Select a task</option>';
+
+      tasks.forEach((task, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = task.title;
+        taskSelector.appendChild(option);
+
+        const taskCard = document.createElement("div");
+        taskCard.className = "task-card";
+        taskCard.innerHTML = `
+          <div class="task-info">
+            <h4>${task.title}</h4>
+            <p>Assigned to: <strong>${task.assigned}</strong></p>
+            <p>Deadline: ${task.deadline}</p>
+          </div>
+          <div>
+            <label>Progress:</label>
+            <input type="range" min="0" max="100" value="${task.progress}" 
+              onchange="updateProgress(this, ${index})">
+            <div class="progress-bar-container">
+              <div class="progress-bar" style="width:${task.progress}%;"></div>
+            </div>
+          </div>
+        `;
+        taskList.appendChild(taskCard);
+      });
+    }
+
+    function updateProgress(input, index) {
+      tasks[index].progress = input.value;
+      renderTasks();
+    }
+        function clearForm() {
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("assignedTo").value = "";
+      document.getElementById("deadline").value = "";
+    }
+
+    function deleteTask() {
+      const selected = document.getElementById("taskSelector").value;
+      if (selected === "" || selected === "Select a task") return;
+      tasks.splice(selected, 1);
+      renderTasks();
+    }
+
+    function editTask() {
+      const selected = document.getElementById("taskSelector").value;
+      if (selected === "" || selected === "Select a task") return;
+
+      const task = tasks[selected];
+      document.getElementById("taskTitle").value = task.title;
+      document.getElementById("assignedTo").value = task.assigned;
+      document.getElementById("deadline").value = task.deadline;
+
+      tasks.splice(selected, 1); // Remove the old one to update with new
+      renderTasks();
+    }
+  </script>
+
 </body>
 </html>
